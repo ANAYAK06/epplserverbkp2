@@ -1,0 +1,424 @@
+﻿@model EsselTestLocalApplication.Models.BusinessRoles
+<div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Update Role</h4>
+        </div>
+        <div class="modal-body" style="overflow-x:hidden">
+            <form onsubmit="return false">
+                <div class="col-md-12">
+                    <br />
+                    <div class="form-group">
+                        <div class="col-md-1"></div>
+                        <div class="col-md-3"><label>Role</label></div>
+                        <div class="col-md-4"><input type="text" class="form-control" id="txtupRolecode" value="@Model.RoleName" /></div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <br />
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3"><label>Status</label></div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <select class="form-control dropdown-toggle" id="ddlupRoleStatus">
+                                <option selected="selected" value="Select">Select</option>
+                                @if (Model.Status == "Approved")
+                                {
+                                <option value="1" selected>Active</option>
+                                }
+                                else
+                                {
+                                <option value="1">Active</option>}
+                                @if (Model.Status == "Rejected")
+                                {
+                                <option value="0" selected>InActive</option>
+                                }
+                                else
+                                {
+                                <option value="0">InActive</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <br />
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3"></div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <ul class="list-inline">
+                                <li class="eagle-checkbox">
+                                    <label class="eagle-check custom-checkbox">
+                                        @if (Model.ApplicableForCC == "Yes")
+                                        {<input type="checkbox" class="eagle-check-input" name="" value="Yes" id="chkUpApplforCC" onclick="upApplicableforCCCheck()" checked>}
+                                        else
+                                        {<input type="checkbox" class="eagle-check-input" name="" value="Yes" id="chkUpApplforCC" onclick="upApplicableforCCCheck()">}
+
+                                        <span class="eagle-check-indicator"></span>
+                                        <span class="eagle-check-description">Applicable For CostCenter</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" id="divUpRoleCCTypes">
+                    <div>
+                        <div class="col-md-1"></div>
+                        <div class="col-md-3">
+                            @Html.LabelFor(model => model.CCTypeIDs, htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4 text-left">
+                            <div class="form-group">
+                                @if (Model.CCtypeList.ToList().Count > 0)
+                                {
+                                @Html.ListBoxFor(model => model.CCTypeIDs, new SelectList(Model.CCtypeList, "CCTypeID", "CCTypeDescription"), new { @class = "listbox form-control", @id = "UpRoleCCtypes", size = 4 })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <input type="submit" value="Submit" class="btn btn1 btn-success" onclick="SubmitRoleStatus()" id="btnupdaterole"/>
+                            @*<input type="submit" value="Submit" class="btn btn1 btn-success" onclick="UpdateRoleDesign()" id="btnupdaterole" />*@
+                            <input type="hidden" id="txtuproleid" value="@Model.UserRoleID" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="text-center">
+                        <br />
+                        <div id="divUpRoleInfoMsg" class="alert alert-danger hidden row">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.listbox').multiselect({
+            includeSelectAllOption: false
+        });
+        if ('@Model.ApplicableForCC' == "Yes") {
+            $("#divUpRoleCCTypes").removeClass('hidden');
+        }
+        else {
+            $("#divUpRoleCCTypes").addClass('hidden');
+        }
+
+
+    });
+
+    function upApplicableforCCCheck() {
+
+        if ($('#chkUpApplforCC').is(":checked") === true) {
+            $("#divUpRoleCCTypes").removeClass('hidden');
+        }
+        else {
+            $("#divUpRoleCCTypes").addClass('hidden');
+        }
+    }
+    function UpdateRoleDesign() {
+        isValid = true;
+        var errorMsg = "";
+        var roleid = $("#txtuproleid").val();
+        var selectedrolestatus = $("#ddlupRoleStatus option:selected").val();
+        var rolestatus;
+        if (selectedrolestatus === "0") {
+            rolestatus = 'Rejected';
+        } else {
+            rolestatus = 'Approved';
+        }
+        var Applicablforcc = ' ';
+        if ($('#chkUpApplforCC').is(":checked") === true) {
+            ApplicableForCC = 'Yes';
+        }
+        else {
+            ApplicableForCC = 'No';
+        }
+        if (ApplicableForCC === 'Yes') {
+            //var CCTypes = $("#NewRoleCCtypes option:selected").index();
+            //if (CCTypes === 0) {
+            var options = $('#UpRoleCCtypes > option:selected');
+            if (options.length === 0) {
+                errorMsg += "<p style='margin-top:-5px!important;'>Select Cost Center Types</p>";
+                isValid = false;
+            }
+        }
+        if (!isValid) {
+            var finalerror = "<div style='align:center'><p>Please enter all required fields!</p>";
+            $("#divUpRoleInfoMsg").text("");
+            $("#divUpRoleInfoMsg").append(finalerror + errorMsg + "</div>");
+            $("#divUpRoleInfoMsg").addClass("alert-danger");
+            $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+            return false;
+        }
+        else {
+            $("#divUpRoleInfoMsg").text("");
+            $("#divUpRoleInfoMsg").addClass("hidden");
+            var ApplicableTypes = "";
+            if (ApplicableForCC === 'Yes') {
+                ApplicableTypes = $('#UpRoleCCtypes option:selected').toArray().map(item => item.value).join();
+            }
+
+            //if (ApplicableForCC === 'No') {
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/CheckCCForRole",
+                    data: '{Roleid:"' + roleid + '"}',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        var checkresult = response.Result;
+                        if (checkresult == "NotExist") {
+
+                            $("#divUpRoleInfoMsg").text("");
+                            $("#divUpRoleInfoMsg").addClass("hidden");
+                            //update role data
+                            var updateRole = {
+                                Action: 'Update',
+                                UserRoleID: roleid,
+                                RoleName: $("#txtupRolecode").val(),
+                                Status: rolestatus,
+                                ApplicableForCC: ApplicableForCC,
+                                ApplicableCCTypes: ApplicableTypes
+                            };
+
+                            $("#btnupdaterole").prop("disabled", true);
+                            var addFailMsg = "Error Occurred While Updating Role";
+                            var addSuccessMsg = "Role Details Updated Successfully.";
+                            $.ajax({
+                                type: 'POST',
+                                dataType: 'json',
+                                url: '/Home/UpdateUserRole',
+                                data: { businessRole: updateRole },
+                                success: function (Data) {
+                                    if (Data.saveStatus === "Updated") {
+                                        $("#divUpRoleInfoMsg").text(addSuccessMsg);
+                                        $("#divUpRoleInfoMsg").removeClass("hidden alert-danger");
+                                        $("#divUpRoleInfoMsg").addClass("alert-success");
+                                    }
+                                    else {
+                                        $("#divUpRoleInfoMsg").text(Data.saveStatus);
+                                        $("#divUpRoleInfoMsg").addClass("alert-danger");
+                                        $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+                                        $("#btnupdaterole").prop("disabled", false);
+                                    }
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    $("#divUpRoleInfoMsg").text(addFailMsg);
+                                    $("#divUpRoleInfoMsg").addClass("alert-danger");
+                                    $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+                                    $("#btnupdaterole").prop("disabled", false);
+                                }
+                            });
+                        }
+                        else if (checkresult == "Exist") {
+                            $("#divUpRoleInfoMsg").text("Remove Assigned CC for this Role in RoleAssign");
+                            $("#divUpRoleInfoMsg").addClass("alert-danger");
+                            $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+                            $("#btnupdaterole").prop("disabled", false);
+                        }
+
+                    },
+                    failure: function (response) {
+
+                    },
+                    error: function (response) {
+
+                    }
+                });
+            //}
+        //    else {
+
+        //         var updateRole = {
+        //    Action: 'Update',
+        //    UserRoleID: roleid,
+        //    RoleName: $("#txtupRolecode").val(),
+        //    Status: rolestatus,
+        //    ApplicableForCC: ApplicableForCC,
+        //    ApplicableCCTypes: ApplicableTypes
+        //};
+
+        //$("#btnupdaterole").prop("disabled", true);
+        //var addFailMsg = "Error Occurred While Updating Role";
+        //var addSuccessMsg = "Role Details Updated Successfully.";
+        //$.ajax({
+        //    type: 'POST',
+        //    dataType: 'json',
+        //    url: '/Home/UpdateUserRole1',
+        //    data: { businessRole: updateRole },
+        //    success: function (Data) {
+        //        if (Data.saveStatus === "Updated") {
+        //            $("#divUpRoleInfoMsg").text(addSuccessMsg);
+        //            $("#divUpRoleInfoMsg").removeClass("hidden alert-danger");
+        //            $("#divUpRoleInfoMsg").addClass("alert-success");
+        //        }
+        //        else {
+        //            $("#divUpRoleInfoMsg").text(Data.saveStatus);
+        //            $("#divUpRoleInfoMsg").addClass("alert-danger");
+        //            $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+        //            $("#btnupdaterole").prop("disabled", false);
+        //        }
+        //    },
+        //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+        //        $("#divUpRoleInfoMsg").text(addFailMsg);
+        //        $("#divUpRoleInfoMsg").addClass("alert-danger");
+        //        $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+        //        $("#btnupdaterole").prop("disabled", false);
+        //    }
+        //});
+        //    }
+        }
+
+        //var updateRole = {
+        //    Action: 'Update',
+        //    UserRoleID: roleid,
+        //    RoleName: $("#txtupRolecode").val(),
+        //    Status: rolestatus,
+        //    ApplicableForCC: ApplicableForCC,
+        //    ApplicableCCTypes: ApplicableTypes
+        //};
+
+        //$("#btnupdaterole").prop("disabled", true);
+        //var addFailMsg = "Error Occurred While Updating Role";
+        //var addSuccessMsg = "Role Details Updated Successfully.";
+        //$.ajax({
+        //    type: 'POST',
+        //    dataType: 'json',
+        //    url: '/Home/UpdateUserRole',
+        //    data: { businessRole: updateRole },
+        //    success: function (Data) {
+        //        if (Data.saveStatus === "Updated") {
+        //            $("#divUpRoleInfoMsg").text(addSuccessMsg);
+        //            $("#divUpRoleInfoMsg").removeClass("hidden alert-danger");
+        //            $("#divUpRoleInfoMsg").addClass("alert-success");
+        //        }
+        //        else {
+        //            $("#divUpRoleInfoMsg").text(Data.saveStatus);
+        //            $("#divUpRoleInfoMsg").addClass("alert-danger");
+        //            $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+        //            $("#btnupdaterole").prop("disabled", false);
+        //        }
+        //    },
+        //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+        //        $("#divUpRoleInfoMsg").text(addFailMsg);
+        //        $("#divUpRoleInfoMsg").addClass("alert-danger");
+        //        $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+        //        $("#btnupdaterole").prop("disabled", false);
+        //    }
+        //});
+
+
+    }
+    function SubmitRoleStatus() {
+        var isValid = true;
+        var errorMsg = "";
+        var Rolecode = $("#txtupRolecode").val();
+        var index = $("#ddlupRoleStatus option:selected").index();
+        if (Rolecode === "") {
+            errorMsg += "<p style='margin-top:-5px!important;'>Enter Role Code</p>";
+            isValid = false;
+        }
+        if (index === 0) {
+            errorMsg += "<p style='margin-top:-5px!important;'>Select Role Status</p>";
+            isValid = false;
+        }
+        var Applicablforcc = ' ';
+        if ($('#chkUpApplforCC').is(":checked") === true) {
+            ApplicableForCC = 'Yes';
+        }
+        else {
+            ApplicableForCC = 'No';
+        }
+        if (ApplicableForCC === 'Yes') {
+            var options = $('#UpRoleCCtypes > option:selected');
+            if (options.length === 0) {
+                errorMsg += "<p style='margin-top:-5px!important;'>Select Cost Center Types</p>";
+                isValid = false;
+            }
+        }
+        if (!isValid) {
+            var finalerror = "<div style='align:center'><p>Please enter all required fields!</p>";
+            $("#divUpRoleInfoMsg").text("");
+            $("#divUpRoleInfoMsg").append(finalerror + errorMsg + "</div>");
+            $("#divUpRoleInfoMsg").addClass("alert-danger");
+            $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+        }
+        else {
+            $("#divUpRoleInfoMsg").text("");
+            $("#divUpRoleInfoMsg").addClass("hidden");
+            var currentroleid = $("#txtuproleid").val();
+
+            //if (index === 1) {
+            //        UpdateRoleDesign();
+            //}
+            //else {
+            $.ajax({
+                type: "POST",
+                url: "/Home/GetVerificationPendingRoleDesign",
+                data: '{Roleid:"' + currentroleid + '"}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var count1 = Object.keys(response).length;
+                    if (count1 > 0) {
+                        var Masteridarray = [];
+                        var msg = "<div style='text-align:center;margin-left:15%'><table cellspacing='2px' style='border:1px solid gray'><tbody>";
+                        var msg1 = "Verifications are in Pending";
+                        var code = "";
+
+                        $.each(response, function () {
+
+                            Masteridarray.push(this['Code']);
+
+                            //code = this['Code'];
+                            //msg += " " + this['PendingNo'] + ",";
+                        });
+                        Masteridarray = $.unique(Masteridarray);
+                        Masteridarray.forEach(function (element, index) {
+
+                            var code = element;
+                            msg += "<tr><td style='width:30%;border:1px solid gray'><b>";
+                            msg += element + "</b></td><td style='width:30%;border:1px solid gray'><div  style='width:70%;overflow-wrap:break-word;margin-left:15%'>";
+                            $.each(response, function () {
+                                if (this['Code'] === code) {
+                                    msg += "<p>" + this['PendingNo'] + " </p> ";
+                                }
+
+                            });
+                            msg += "</div></td></tr>";
+
+                        });
+                        msg += "</tbody></table></div>";
+                        var finalerror = "<div style='align:center'><p>Please Complete the fallowing Verifications!</p><br/>";
+                        $("#divUpRoleInfoMsg").text("");
+                        $("#divUpRoleInfoMsg").append(finalerror + "<div>" + msg + "</div>");
+                        $("#divUpRoleInfoMsg").addClass("alert-danger");
+                        $("#divUpRoleInfoMsg").removeClass("hidden alert-success");
+
+                    }
+                    else {
+                        alert('UpdateRoleDesign');
+                        UpdateRoleDesign();
+
+                    }
+                },
+                failure: function (response) {
+                },
+                error: function (response) {
+                }
+            });
+            //}
+
+        }
+    }
+</script>
